@@ -83,7 +83,10 @@ int main(int argc, char**argv) {
 			}
 			memset(&numero_mensagens_recebidas[emissor],0,sizeof &numero_mensagens_recebidas[emissor]);
 			numero_mensagens_recebidas[emissor] = 0;
-			send(novo_fd,msg_final, MAXMSG, 0);
+			if (send(novo_fd,msg_final, MAXMSG, 0) == -1) {
+				puts("Erro ao enviar mensagem!");
+				return 1;
+			}
 			close(novo_fd);
 		}	
 
