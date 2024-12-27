@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 #define PORTA "2002"
 #define MAXMSG 256
@@ -57,7 +58,8 @@ int main(int argc, char**argv) {
 		puts("Erro no listen!");
 		return 1;
 	}
-
+	
+	puts("Aguardando conexões...");
 	while(1){
 		memset(msg, 0, sizeof msg);
 		sin_size = sizeof cliente_addr;
@@ -69,7 +71,17 @@ int main(int argc, char**argv) {
 			puts("Erro ao receber mensagem");
 			return 1;
 		}
-		printf("Recebido: %s\n", msg);
+		char string_ip[INET6_ADDRSTRLEN];
+		void *endereco_ip;
+		if (cliente_addr.ss_family == AF_INET) {
+			endereco_ip = &(((struct sockaddr_in*)&cliente_addr)->sin_addr);
+		} else {
+			endereco_ip = &(((struct sockaddr_in6*)&cliente_addr)->sin6_addr);
+		}
+		
+		inet_ntop(cliente_addr.ss_family, endereco_ip, string_ip, sizeof string_ip);
+		printf("IP: %s\nRecebido: %s\n\n", string_ip, msg);
+		
 		int emissor = msg[0] - 48, env_rcb = msg[1], destinatario = msg[2] - 48;
         
 		if (env_rcb == ENVIAR && numero_mensagens_recebidas[destinatario] < 100) {
@@ -83,10 +95,7 @@ int main(int argc, char**argv) {
 			}
 			memset(&numero_mensagens_recebidas[emissor],0,sizeof &numero_mensagens_recebidas[emissor]);
 			numero_mensagens_recebidas[emissor] = 0;
-			if (send(novo_fd,msg_final, MAXMSG, 0) == -1) {
-				puts("Erro ao enviar mensagem!");
-				return 1;
-			}
+			send(novo_fd,msg_final, MAXMSG, 0);
 			close(novo_fd);
 		}	
 
