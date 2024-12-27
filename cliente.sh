@@ -1,4 +1,5 @@
 #!/bin/bash
+gcc cliente.c -o cliente
 while true; do
 	resposta=$(dialog --stdout --title "Sistema de Mensagem Simples" --menu "Escolha uma opção:" \
 	                0 0 20 \
